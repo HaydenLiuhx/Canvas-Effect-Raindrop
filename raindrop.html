@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Raindrop</title>
+    <style>
+        body{
+            margin:0px;
+        }
+        canvas{
+            display: block;
+            background-color: black;
+            position: absolute;
+            z-index: -2;
+        }
+        .login-content{
+            width: 400px;
+            height: 250px;
+            background-color: #ffffffd6;
+            margin: 0px auto;
+            margin-bottom: 20px;
+            padding: 20px 40px;
+            top:80px;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 0 50px #cac6c6;
+            border-radius: 20px;
+            position: relative;
+            
+        }
+        .login-form-button{
+            width: 60%;
+            margin-top:40px;
+            display: flex;
+            align-items: center;
+            }
+        .login-form-input{
+            margin-top:20px;
+            height:20px;
+            width:100%;
+            margin-bottom:20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="raindrop"></canvas>
+    
+    <div class="login-content">
+        <form class="login-form">
+                <input class="login-form-input" placeholder="Username" type="user"/>
+                <br />
+                <Input type="password" placeholder="Password" class="login-form-input"/>
+                <br />
+                <Button type="primary" class="login-form-button">Log in</Button>
+        </form>
+    </div>
+
+    <script>
+        var canvas = document.querySelector("#raindrop");
+        //canvas.style.backgroundColor = "aquamarine";
+        ~~function start(){
+            //callback itself
+            window.onresize=arguments.callee
+            canvas.width = window.innerWidth
+            canvas.height = window.innerHeight
+        }()
+        //Because of the line spacing, scroll bars will appear
+        //When the browser window height changes, resetcanvas
+        //Get drawable area
+        var content=canvas.getContext("2d");
+        w=window.innerWidth
+        h=window.innerHeight
+        // content.fillStyle="red"
+        // content.fillRect(10, 50, 200, 300);
+        // content.strokeStyle='blue';
+        // content.strokeRect(200,100,200,300)
+        // //arc(x, y, r, startAngle, endAngle, anticlockwise):
+        // content.beginPath();
+        // content.arc(50,50,40,0, Math.PI*2,false)
+        // content.stroke()
+        let rainArray=[] //Array of raindrops
+        random=(min,max)=>{
+            return Math.random()*(max-min)+min
+        }
+        function Rain(){}
+        Rain.prototype={
+            init: function(){
+                this.x=random(0,w) //new raindrops x
+                this.y=0//y
+                this.velocity=random(3.5,5)//drop velocity
+                this.h=random(0.8*h,0.9*h) //floor height
+                this.r=1//The radius of the raindrop bloom
+                this.velocityR=1//the radius bloom velocity
+            },
+            draw: function(){
+                if(this.y<this.h){
+                    content.beginPath();
+                    content.fillStyle="white";
+                    content.fillRect(this.x,this.y,5,5)
+                }else{
+                    content.beginPath();
+                    content.strokeStyle="#31f7f7"
+                    //arc(x, y, r, startAngle, endAngle, anticlockwise)
+                    content.arc(this.x,this.y,this.r,0, Math.PI*2,false)
+                    content.stroke()
+                }
+            },
+            move: function(){
+                if(this.y<this.h){
+                    this.y+=this.velocity//drop 4-5px/s
+                }else{
+                    if(this.r<80){//max radius 45
+                        this.r+=this.velocityR
+                    }else{
+                        this.init()//go back to sky
+                    }
+                }
+                this.draw()
+            }
+        }
+
+        var rain = new Rain()
+        rain.init();
+        rain.draw();
+        createRain=(number)=>{
+            for(let i = 0; i < number; i++){
+                setTimeout(function(){
+                    var rain = new Rain()
+                    rain.init();
+                    rain.draw();
+                    rainArray.push(rain)
+                },200*i)
+                
+            }
+        }
+        createRain(30)
+        setInterval(()=>{
+            content.fillStyle="rgba(0,0,0,0.05)"
+            content.fillRect(0,0,w,h)
+            for(let item of rainArray){
+                //for of: item means every elements in the array
+                //for in: item means elements' index
+                item.move()
+            }
+        },1000/60)
+    </script>
+</body>
+</html>
